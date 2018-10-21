@@ -1,0 +1,5 @@
+package kagoyume;
+
+class Item {
+
+}
