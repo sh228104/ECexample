@@ -38,7 +38,7 @@ public class Search extends HttpServlet {
             String keyword = request.getParameter("keyword");
             
             //セッション
-            HttpSession session = request.getSession();
+            HttpSession hs = request.getSession();
             
             jp.setJsonText(jp.getSearchJson(keyword));
             
@@ -52,13 +52,13 @@ public class Search extends HttpServlet {
             ArrayList<String> itemCodeList = jp.jsonSearchParser(jp.getJsonText(), "Code");
             
             //セッションスコープ経由で検索結果を送信する
-            session.setAttribute("nameList", nameList);
-            session.setAttribute("imageList", imageList);
-            session.setAttribute("priceList", priceList);
-            session.setAttribute("descriptionList", descriptionList);
-            session.setAttribute("rateList", rateList);
-            session.setAttribute("itemCodeList", itemCodeList);
-            session.setAttribute("jums", jh);
+            hs.setAttribute("nameList", nameList);
+            hs.setAttribute("imageList", imageList);
+            hs.setAttribute("priceList", priceList);
+            hs.setAttribute("descriptionList", descriptionList);
+            hs.setAttribute("rateList", rateList);
+            hs.setAttribute("itemCodeList", itemCodeList);
+            hs.setAttribute("jums", jh);
             //RequestDispatcher
             request.getRequestDispatcher("/search.jsp").forward(request, response);
         }

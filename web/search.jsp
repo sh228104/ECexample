@@ -10,9 +10,14 @@
          import="java.util.ArrayList"
          %>
 <%
+    int loginFlg = 0;
     HttpSession hs = request.getSession();
     JumsHelper jh = (JumsHelper) hs.getAttribute("jums");
+    
     UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
+    if (!Objects.equals(loginUser, null)) {
+        loginFlg = 1;
+    }
     //セッションスコープに保存された商品情報を取得する
     ArrayList<String> nameList = (ArrayList<String>) hs.getAttribute("nameList");
     ArrayList<String> imageList = (ArrayList<String>) hs.getAttribute("imageList");
@@ -27,7 +32,7 @@
     </head>
     <body>
         <h1>検索結果</h1>
-        <% if (!Objects.equals(loginUser, null)) { %>
+        <% if (loginFlg == 1) { %>
             ようこそ<%= loginUser.getName() %>さん！<br>
             <form action="Login" method="GET">
                 <input type="submit" name="logoutBtn" value="ログアウト">

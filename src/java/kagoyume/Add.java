@@ -30,25 +30,46 @@ public class Add extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
+            //フラグ管理
+            int loginFlg = 0;
+            int cartFlg = 0;
+            
             HttpSession hs = request.getSession();
             UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
-            ItemData id = (ItemData) hs.getAttribute("itemData");
-            //カートの中身の情報を一時的に入れるための配列
-            ArrayList<ItemData> cartData = new ArrayList<ItemData>();
-            //セッション"cartData"がnullか否かで処理を分ける
-            if (Objects.equals(hs.getAttribute("cartData"), null)) {
-                cartData.add(id);
-                hs.setAttribute("cartData", cartData);
-            } else if (!Objects.equals(hs.getAttribute("cartData"), null)) {
-                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                cartData.add(id);
-                hs.setAttribute("cartData", cartData);
-            }
-            //ログインしている場合、ユーザー固有のカートデータを保存する
+            
             if (!Objects.equals(loginUser, null)) {
-                loginUser.setUserCartData(cartData);
-                hs.setAttribute("loginUser", loginUser);
+                loginFlg = 1;
             }
+            
+            ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+            
+            if (!Objects.equals(hs.getAttribute("cartData"), null)) {
+                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+                cartFlg = 1;
+            }
+            //カートに追加する商品情報を読み込む
+            ItemData id = (ItemData) hs.getAttribute("itemData");
+            
+            //ログインしている場合はデータベースに商品情報を登録する
+            if (loginFlg == 1) {
+                
+                UserDataDAO dao = new UserDataDAO();
+                
+                try {
+                    
+                    dao.insertCartData(id, loginUser);
+                    
+                } catch (Exception e) {
+                    //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+                    request.setAttribute("error", e.getMessage());
+                    request.getRequestDispatcher("/error.jsp").forward(request, response);
+                }
+                
+            } else {
+                cartData.add(id);
+                hs.setAttribute("cartData", cartData);
+            }
+            
             request.getRequestDispatcher("add.jsp").forward(request, response);
         }
     }

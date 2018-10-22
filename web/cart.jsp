@@ -19,11 +19,8 @@
     if (!Objects.equals(loginUser, null)) {
         loginFlg = 1;
     }
-    
-    ArrayList<ItemData> cartData = new ArrayList<ItemData>();
-    if (!Objects.equals(hs.getAttribute("cartData"), null)) {
-        cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-    }
+    //cartdataの読み込み
+    ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
     
     //カートの合計価格を計算する
     int sumPrice = 0;
@@ -42,7 +39,7 @@
     </head>
     <body>
         <h1>カート</h1><br>
-        <% if (!Objects.equals(loginUser, null)) { %>
+        <% if (loginFlg == 1) { %>
             ようこそ<%= loginUser.getName() %>さん！<br>
             <form action="Login" method="GET">
                 <input type="submit" name="logoutBtn" value="ログアウト">
@@ -58,15 +55,15 @@
         <% } else { %>
             <% for (int i=0; i < cartData.size(); i++) { %>
                 <img src="<%= cartData.get(i).getImage() %>"<br>
-                <a href=Item?id=<%= i %>><%= cartData.get(i).getName() %></a><br>
+                <a href=Item?cartID=<%= i %>><%= cartData.get(i).getName() %></a><br>
                 <p><%= cartData.get(i).getPrice() %>円(税込)</p><br>
                 <form action="Cart" method="GET">
                     <input type="submit" name="deleteBtn" value="削除">
-                    <input type="hidden" name="deleteID" value="<%= i %>">
+                    <input type="hidden" name="deleteID" value="<% if (loginFlg == 1) {out.print(cartData.get(i).getCartID()); } else {out.print(i);} %>">
                 </form>
             <% } %>
             <h3>カートの合計：<%= sumPrice %>円(税込)</h3><br>
-            <% if (loginFlg == 1 && !Objects.equals(cartData, null)) { %>
+            <% if (loginFlg == 1 && !Objects.equals(cartData, null) && cartData.size() != 0) { %>
                 <form action="Buyconfirm" method="POST">
                     <input type="submit" name="buyBtn" value="購入する"> 
                 </form>

@@ -140,7 +140,7 @@ public class JsonProcessing {
             //keywordのエンコード
             itemCode = URLEncoder.encode(itemCode, "UTF-8");
             //接続するURLを指定する
-            URL url = new URL(itemLookupUrl + "?appid=" + appId + "&itemcode=" + itemCode );
+            URL url = new URL(itemLookupUrl + "?appid=" + appId + "&itemcode=" + itemCode + "&responsegroup=large");
             //コネクションを取得する
             con = (HttpURLConnection) url.openConnection();
             //リクエストメソッドの設定
@@ -161,7 +161,7 @@ public class JsonProcessing {
         return json;
     }
     
-    //商品コードでの検索結果から商品名・画像・値段の情報を取り出してItemDataとして返却するメソッド
+    //商品コードでの検索結果から情報を取り出してItemDataとして返却するメソッド
     public ItemData jsonLookupParser (String json) {
         
         ItemData id = new ItemData();
@@ -169,18 +169,27 @@ public class JsonProcessing {
         try {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode node = mapper.readTree(json);
-                    //画像URLの取得
-                    String image = node.get("ResultSet").get("0").get("Result").get("0").get("Image").get("Small").toString();
-                    image = image.substring(1, image.length()-1);
-                    id.setImage(image);
-                    //値段の取得
-                    String price = node.get("ResultSet").get("0").get("Result").get("0").get("Price").get("_value").toString();
-                    price = price.substring(1, price.length()-1);
-                    id.setPrice(Integer.parseInt(price));
+                    
                     //商品名の取得
                     String name = node.get("ResultSet").get("0").get("Result").get("0").get("Name").toString();
                     name = name.substring(1, name.length()-1);
                     id.setName(name);
+                    //画像URLの取得
+                    String image = node.get("ResultSet").get("0").get("Result").get("0").get("Image").get("Medium").toString();
+                    image = image.substring(1, image.length()-1);
+                    id.setImage(image);
+                    //説明文の取得
+                    String description = node.get("ResultSet").get("0").get("Result").get("0").get("Description").toString();
+                    description = description.substring(1, description.length()-1);
+                    id.setDescription(image);
+                    //値段の取得
+                    String price = node.get("ResultSet").get("0").get("Result").get("0").get("Price").get("_value").toString();
+                    price = price.substring(1, price.length()-1);
+                    id.setPrice(Integer.parseInt(price));
+                    //評価の取得
+                    String rate = node.get("ResultSet").get("0").get("Result").get("0").get("Review").get("Rate").toString();
+                    rate = rate.substring(1, rate.length()-1);
+                    id.setRate(Double.parseDouble(rate));
                     
             } catch (IOException e) {
                 e.printStackTrace();

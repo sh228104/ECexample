@@ -30,27 +30,62 @@ public class Cart extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
-            
+            //フラグ管理
+            int loginFlg = 0;
             
             HttpSession hs = request.getSession();
-            //カート画面で商品情報を持ち回るBeans
-            ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-            //ログインしている場合、ユーザーのデータを読み込む
+            //カートの商品情報を格納する配列
+            ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+            
+            //ログインしている場合の処理
             UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
+            if (!Objects.equals(loginUser, null)) {
+                loginFlg = 1;
+                
+                try {
+                    
+                    cartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                    
+                } catch (Exception e) {
+                    //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+                    request.setAttribute("error", e.getMessage());
+                    request.getRequestDispatcher("/error.jsp").forward(request, response);
+                }
+            }
+            //ログインしていない場合の処理
+            //セッションにcartDataが保存されている時
+            if (loginFlg == 0 && !Objects.equals(hs.getAttribute("cartData"), null)) {
+                
+                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+            
+            }
+            
             //カート画面からIDをGETで受け取り、カートから商品を削除する処理
             int deleteID = 0;
             
-            if (!Objects.equals(request.getParameter("deleteID"), null) && !Objects.equals(cartData, null)) {
-                deleteID = Integer.parseInt(request.getParameter("deleteID"));
-                cartData.remove(deleteID);
-                hs.setAttribute("cartData", cartData);
+            if (!Objects.equals(request.getParameter("deleteID"), null)) {
                 
-                if (!Objects.equals(loginUser, null)) {
-                    loginUser.setUserCartData(cartData);
-                    hs.setAttribute("loginUser", loginUser);
+                deleteID = Integer.parseInt(request.getParameter("deleteID"));
+                
+                if (loginFlg == 0) {
+                    
+                    cartData.remove(deleteID);
+                
+                } else if (loginFlg == 1) {
+                    
+                    try {
+                        
+                        UserDataDAO.getInstance().deleteCartData(deleteID);
+                        cartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                        
+                    } catch (Exception e) {
+                        //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+                        request.setAttribute("error", e.getMessage());
+                        request.getRequestDispatcher("/error.jsp").forward(request, response);
+                    }
+                    
                 }
             } 
-            
             //cartDataのセッションを上書きする
             hs.setAttribute("cartData", cartData);
             

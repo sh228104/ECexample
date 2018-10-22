@@ -14,6 +14,7 @@ public class ItemData implements Serializable {
     private double rate;
     private String itemCode;
     private Date buyDate;
+    private int cartID;
     
     public ItemData() {
         name = "";
@@ -23,6 +24,7 @@ public class ItemData implements Serializable {
         rate = 0;
         itemCode = "";
         buyDate = null;
+        cartID = 0;
     }
     
     public String getName() {
@@ -66,5 +68,11 @@ public class ItemData implements Serializable {
     }
     public void setBuyDate(Date buyDate) {
         this.buyDate = buyDate;
+    }
+    public int getCartID() {
+        return cartID;
+    }
+    public void setCartID(int cartID) {
+        this.cartID = cartID;
     }
 }

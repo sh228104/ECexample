@@ -48,7 +48,7 @@ public class Myhistory extends HttpServlet {
                     itemData.add(jp.jsonLookupParser(json));
                 }
                 
-                hs.setAttribute("itemData", itemData);
+                request.setAttribute("itemData", itemData);
                 request.getRequestDispatcher("/myhistory.jsp").forward(request, response);
                 
             } catch (Exception e) {

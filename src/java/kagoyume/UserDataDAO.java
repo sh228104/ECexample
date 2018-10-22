@@ -229,4 +229,107 @@ public class UserDataDAO {
             }
         }
     }
+    
+    /**
+     * カート情報データベースへの挿入処理を行う。
+     * @param ud 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     */
+    public void insertCartData(ItemData id, UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        
+        try {
+            con = DBmanager.getConnection();
+            
+                st =  con.prepareStatement("INSERT INTO cart_t(userID,itemCode,itemName,itemImage,itemPrice) VALUES(?,?,?,?,?)");
+                st.setInt(1, ud.getUserID());
+                st.setString(2, id.getItemCode());
+                st.setString(3, id.getName());
+                st.setString(4, id.getImage());
+                st.setInt(5, id.getPrice());
+                st.executeUpdate();
+                
+            System.out.println("insert cart_t completed");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        } finally {
+            if(con != null){
+                con.close();
+            }
+        }
+    }
+    
+    /**
+     * ユーザーIDを基にカート情報データベースの検索処理を行う
+     * 情報がある場合は商品コード・商品名・画像・価格といった情報を持つBeansをArrayListに格納して返却する
+     * @param ud 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     * @return 条件に一致したレコード
+     */
+    public ArrayList<ItemData> searchCartData(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        //検索に一致したデータを格納するItemDataとArrayList
+        ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+        
+        try {
+            con = DBmanager.getConnection();
+            //SQL文
+            String sql = "SELECT * FROM cart_t WHERE userID = ?";
+            
+            st =  con.prepareStatement(sql);
+            st.setInt(1, ud.getUserID());
+            
+            //executeQueryメソッドでSQL文を実行　ResultSetとして返却される
+            ResultSet rs = st.executeQuery();
+            ItemData id = new ItemData();
+            //データの有無をチェックし、codeListにセットする
+            while(rs.next()) {
+                //ResultSetから特定のカラム情報を取得し、Beansへ格納する
+                id.setCartID(rs.getInt(1));
+                id.setItemCode(rs.getString(3));
+                id.setName(rs.getString(4));
+                id.setImage(rs.getString(5));
+                id.setPrice(rs.getInt(6));
+                cartData.add(id);
+            }
+            
+            System.out.println("search cart_t completed");
+            return cartData;
+            
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        } finally {
+            if(con != null){
+                con.close();
+            }
+        }
+    }
+    
+     /**
+     * カート情報データベースの削除処理を行う。
+     * @param deleteID 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     */
+    public void deleteCartData(int deleteID) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try {
+            con = DBmanager.getConnection();
+            st =  con.prepareStatement("DELETE FROM cart_t WHERE cartID=?");
+            st.setInt(1, deleteID);
+            st.executeUpdate();
+            System.out.println("delete cart_t completed");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        } finally {
+            if(con != null){
+                con.close();
+            }
+        }
+    }
 }

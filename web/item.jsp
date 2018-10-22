@@ -9,10 +9,16 @@
          import="java.util.Objects"
          %>
 <%
+    int loginFlg =0;
     HttpSession hs = request.getSession();
-    ItemData id = (ItemData) hs.getAttribute("itemData");
     //ログインしている場合、ユーザーのデータを読み込む
     UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
+    if (!Objects.equals(loginUser, null)) {
+        loginFlg = 1;
+    }
+    //商品情報をセッションから取得する
+    ItemData id = (ItemData) hs.getAttribute("itemData");
+    
 %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -23,7 +29,7 @@
     </head>
     <body>
         <h1>商品詳細</h1><br>
-        <% if (!Objects.equals(loginUser, null)) { %>
+        <% if (loginFlg == 1) { %>
             ようこそ<%= loginUser.getName() %>さん！<br>
             <form action="Login" method="GET">
                 <input type="submit" name="logoutBtn" value="ログアウト">

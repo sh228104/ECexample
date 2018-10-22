@@ -8,20 +8,14 @@
          import="kagoyume.JumsHelper"
          import="java.util.ArrayList"
          import="java.util.Objects"
-         
          %>
 <%
-    int loginFlg = 0;
-    
     HttpSession hs = request.getSession();
     
     //ログインしている場合、ユーザーのデータを読み込む
     UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
-    if (!Objects.equals(loginUser, null)) {
-        loginFlg = 1;
-    }
     
-    ArrayList<ItemData> itemData = (ArrayList<ItemData>) hs.getAttribute("itemData");
+    ArrayList<ItemData> itemData = (ArrayList<ItemData>) request.getAttribute("itemData");
 %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

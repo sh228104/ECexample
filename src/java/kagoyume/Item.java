@@ -32,25 +32,23 @@ public class Item extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             try {
-                request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
-                //GETで取得したIDを格納する
-                int userID = Integer.parseInt(request.getParameter("id"));
+                int loginFlg = 0;
                 //セッション
                 HttpSession hs = request.getSession();
+                request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+                //GETで取得したIDを格納する
+                int itemID = Integer.parseInt(request.getParameter("id"));
+                int cartID = Integer.parseInt(request.getParameter("cartID"));
+                
+                if (!Objects.equals(hs.getAttribute("loginUser"), null)) {
+                    loginFlg = 1;
+                }
                 //商品情報を格納するBeans
                 ItemData id = new ItemData();
                 
                 ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                //カートに商品がある場合と、無い場合で処理を分ける
-                if (!Objects.equals(cartData, null)) {
-                    id.setName(cartData.get(userID).getName());
-                    id.setImage(cartData.get(userID).getImage());
-                    id.setPrice(cartData.get(userID).getPrice());
-                    id.setDescription(cartData.get(userID).getDescription());
-                    id.setRate(cartData.get(userID).getRate());
-                    id.setItemCode(cartData.get(userID).getItemCode());
-                    hs.setAttribute("itemData", id);
-                } else {
+                //どこからアクセスしたかで処理を分ける（検索結果画面とカート画面）
+                if (!Objects.equals(cartData, null) && !Objects.equals(itemID, null)) {
                     ArrayList<String> nameList = (ArrayList<String>) hs.getAttribute("nameList");
                     ArrayList<String> imageList = (ArrayList<String>) hs.getAttribute("imageList");
                     ArrayList<String> priceList = (ArrayList<String>) hs.getAttribute("priceList");
@@ -58,14 +56,21 @@ public class Item extends HttpServlet {
                     ArrayList<String> rateList = (ArrayList<String>) hs.getAttribute("rateList");
                     ArrayList<String> itemCodeList = (ArrayList<String>) hs.getAttribute("itemCodeList");
 
-                    id.setName(nameList.get(userID));
-                    id.setImage(imageList.get(userID));
-                    id.setPrice(Integer.parseInt(priceList.get(userID)));
-                    id.setDescription(descriptionList.get(userID));
-                    id.setRate(Double.parseDouble(rateList.get(userID)));
-                    id.setItemCode(itemCodeList.get(userID));
-                    hs.setAttribute("itemData", id);
+                    id.setName(nameList.get(itemID));
+                    id.setImage(imageList.get(itemID));
+                    id.setPrice(Integer.parseInt(priceList.get(itemID)));
+                    id.setDescription(descriptionList.get(itemID));
+                    id.setRate(Double.parseDouble(rateList.get(itemID)));
+                    id.setItemCode(itemCodeList.get(itemID));
+                    
+                } else if (!Objects.equals(cartData, null) && !Objects.equals(cartID, null)) {
+                    String itemCode = cartData.get(itemID).getItemCode();
+                    JsonProcessing jp = new JsonProcessing();
+                    String json = jp.getLookupJson(itemCode);
+                    id = jp.jsonLookupParser(json);
                 }
+               
+                hs.setAttribute("itemData", id);
                 
                 request.getRequestDispatcher("/item.jsp").forward(request, response);  
             } catch (Exception e) {
