@@ -32,7 +32,7 @@ public class Add extends HttpServlet {
             /* TODO output your page here. You may use following sample code. */
             //フラグ管理
             int loginFlg = 0;
-            int cartFlg = 0;
+            
             
             HttpSession hs = request.getSession();
             UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
@@ -42,10 +42,9 @@ public class Add extends HttpServlet {
             }
             
             ArrayList<ItemData> cartData = new ArrayList<ItemData>();
-            
+            //セッションにcartDataが存在している場合は読み込む
             if (!Objects.equals(hs.getAttribute("cartData"), null)) {
                 cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                cartFlg = 1;
             }
             //カートに追加する商品情報を読み込む
             ItemData id = (ItemData) hs.getAttribute("itemData");
@@ -53,11 +52,9 @@ public class Add extends HttpServlet {
             //ログインしている場合はデータベースに商品情報を登録する
             if (loginFlg == 1) {
                 
-                UserDataDAO dao = new UserDataDAO();
-                
                 try {
                     
-                    dao.insertCartData(id, loginUser);
+                    UserDataDAO.getInstance().insertCartData(id, loginUser);
                     
                 } catch (Exception e) {
                     //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー

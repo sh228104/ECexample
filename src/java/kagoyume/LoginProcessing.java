@@ -30,45 +30,69 @@ public class LoginProcessing extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
+            HttpSession hs = request.getSession();
+            //フラグ管理
+            int cartFlg = 0;
+            if (!Objects.equals(hs.getAttribute("cartData"), null)) {
+                cartFlg = 1;
+            }
             
             try {
                 //フォームからの入力を取得してUserDataに格納
                 JumsHelper jh = new JumsHelper();
                 UserData ud = new UserData();
+                
                 request.setCharacterEncoding("UTF-8");
                 ud.setName(request.getParameter("username"));
                 ud.setPassword(request.getParameter("password"));
                 
                 UserDataDTO loginUser = new UserDataDTO();
+                
                 if (!ud.getName().equals("")) {
+                    
                     UserDataDTO udto = new UserDataDTO();
                     //UserDataからUserDataDTOへマッピング
                     ud.DTOMapping(udto);
                     loginUser = UserDataDAO.getInstance().search(udto);
-                    //セッション
-                    HttpSession hs = request.getSession();
                     //ログイン成功時の戻り先アドレスを取得する
                     jh = (JumsHelper) hs.getAttribute("jums");
-                    
-                    ArrayList<ItemData> x = loginUser.getUserCartData();
-                    
+                    //カートの中身の情報を格納するArrayList
+                    ArrayList<ItemData> cartData = new ArrayList<ItemData>(); 
+                    //ログインに成功した場合の処理
                     if (!Objects.equals(loginUser.getName(), null)) {
-                        //セッション"cartData"がnullか否か、ユーザー毎のカート情報が空か否かで処理を分ける
-                        if (Objects.equals(hs.getAttribute("cartData"), null) && !Objects.equals(x, null)) {
-                            hs.setAttribute("cartData", x);
-                        } else if (Objects.equals(hs.getAttribute("cartData"), null) && Objects.equals(x, null)) {
-                            hs.setAttribute("cartData", null);
-                        } else if (!Objects.equals(hs.getAttribute("cartData"), null) && Objects.equals(x, null)) {
-                            ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                            loginUser.setUserCartData(cartData);
-                        } else {
-                            ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                            for (int i=0; i < cartData.size(); i++) {
-                                x.add(cartData.get(i));
+                        ArrayList<ItemData> userCartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                        //セッション"cartData"が存在しているか、ユーザー毎のカート情報がデータベースに登録されているか否かで処理を分ける
+                        //ユーザーのカート情報が無い場合
+                        if (Objects.equals(userCartData, null)) {
+                            
+                            //セッションにカート情報がある場合
+                            if (cartFlg == 1) {
+                                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+                                //カート情報データベースへの挿入処理
+                                for (int i=0; i < cartData.size(); i++) {
+                                    UserDataDAO.getInstance().insertCartData(cartData.get(i), loginUser);
+                                }
+                                
+                            //セッションにカート情報が無い場合
+                            } else {
+                                hs.setAttribute("cartData", cartData);
                             }
-                            loginUser.setUserCartData(cartData);
-                            hs.setAttribute("cartData", x);
+                        //ユーザーのカート情報がある場合
+                        } else {
+                            //セッションにカート情報がある場合
+                            if (cartFlg == 1) {
+                                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+                                //セッションで保存していた商品をユーザー固有のカート(データベース)へ追加する
+                                for (int i=0; i < cartData.size(); i++) {
+                                    UserDataDAO.getInstance().insertCartData(cartData.get(i), loginUser);
+                                }
+                                hs.removeAttribute("cartData");
+                            //セッションにカート情報が無い場合
+                            } else {
+                                
+                            }
                         }
+                        //ログイン情報の保存
                         hs.setAttribute("loginUser", loginUser);
                         //以前のページにリダイレクトする
                         response.sendRedirect(jh.getReturnAdd());

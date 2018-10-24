@@ -1,7 +1,6 @@
 package kagoyume;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.sql.Timestamp;
 
 /**
@@ -18,7 +17,7 @@ public class UserDataDTO implements Serializable {
     private int total;
     private Timestamp newDate;
     private int deleteFlg;
-    private ArrayList<ItemData> userCartData;
+    
     
     public int getUserID() {
         return userID;
@@ -73,11 +72,5 @@ public class UserDataDTO implements Serializable {
     }
     public void setDeleteFlg(int deleteFlg) {
         this.deleteFlg = deleteFlg;
-    }
-    public ArrayList<ItemData> getUserCartData() {
-        return userCartData;
-    }
-    public void setUserCartData(ArrayList<ItemData> cartData) {
-        this.userCartData = cartData;
     }
 }

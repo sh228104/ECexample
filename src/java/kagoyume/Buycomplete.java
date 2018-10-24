@@ -34,7 +34,7 @@ public class Buycomplete extends HttpServlet {
             //セッション
             HttpSession hs = request.getSession();
             
-            ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+            ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("userCartData");
             UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
             UserDataDAO dao = new UserDataDAO();
             
@@ -51,6 +51,10 @@ public class Buycomplete extends HttpServlet {
                 hs.setAttribute("loginUser", loginUser);
                 //データベースの総購入金額を更新する
                 dao.update(loginUser);
+                //成功したので、カート情報データベースのレコードを削除する
+                for (int i=0; i < cartData.size(); i++) {
+                    dao.deleteCartData(cartData.get(i).getCartID());
+                }
                 //成功したので、余計なセッションを破棄する
                 hs.removeAttribute("cartData");
                 

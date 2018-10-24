@@ -13,13 +13,18 @@
         %>
 
 <%
-    JumsHelper jh = new JumsHelper();
+    int loginFlg = 0;
     
     HttpSession hs = request.getSession();
+    JumsHelper jh = new JumsHelper();
     
+    //ログインしている場合、ユーザーのデータを読み込む
     UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
-    
-    ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+    if (!Objects.equals(loginUser, null)) {
+        loginFlg = 1;
+    }
+    //cartdataの読み込み
+    ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("userCartData");
     
     //カートの合計価格を計算する
     int sumPrice = 0;

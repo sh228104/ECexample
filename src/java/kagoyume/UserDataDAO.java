@@ -263,6 +263,7 @@ public class UserDataDAO {
     
     /**
      * ユーザーIDを基にカート情報データベースの検索処理を行う
+     * deleteFlgの値が1のレコードについては無視する
      * 情報がある場合は商品コード・商品名・画像・価格といった情報を持つBeansをArrayListに格納して返却する
      * @param ud 対応したデータを保持しているJavaBeans
      * @throws SQLException 呼び出し元にcatchさせるためにスロー 
@@ -277,17 +278,19 @@ public class UserDataDAO {
         try {
             con = DBmanager.getConnection();
             //SQL文
-            String sql = "SELECT * FROM cart_t WHERE userID = ?";
+            String sql = "SELECT * FROM cart_t WHERE userID = ? AND deleteFlg = ?";
             
             st =  con.prepareStatement(sql);
             st.setInt(1, ud.getUserID());
+            st.setInt(2, 0);
             
             //executeQueryメソッドでSQL文を実行　ResultSetとして返却される
             ResultSet rs = st.executeQuery();
-            ItemData id = new ItemData();
+            
             //データの有無をチェックし、codeListにセットする
             while(rs.next()) {
                 //ResultSetから特定のカラム情報を取得し、Beansへ格納する
+                ItemData id = new ItemData();
                 id.setCartID(rs.getInt(1));
                 id.setItemCode(rs.getString(3));
                 id.setName(rs.getString(4));
@@ -310,7 +313,7 @@ public class UserDataDAO {
     }
     
      /**
-     * カート情報データベースの削除処理を行う。
+     * カート情報データベースの削除処理を行う。指定されたcartIDのレコードのdeleteFlgを1に書き換える。
      * @param deleteID 対応したデータを保持しているJavaBeans
      * @throws SQLException 呼び出し元にcatchさせるためにスロー 
      */
@@ -319,8 +322,9 @@ public class UserDataDAO {
         PreparedStatement st = null;
         try {
             con = DBmanager.getConnection();
-            st =  con.prepareStatement("DELETE FROM cart_t WHERE cartID=?");
-            st.setInt(1, deleteID);
+            st =  con.prepareStatement("UPDATE cart_t SET deleteFlg=? WHERE cartID=?");
+            st.setInt(1, 1);
+            st.setInt(2, deleteID);
             st.executeUpdate();
             System.out.println("delete cart_t completed");
         } catch (SQLException e) {

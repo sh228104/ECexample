@@ -19,8 +19,15 @@
     if (!Objects.equals(loginUser, null)) {
         loginFlg = 1;
     }
+    
     //cartdataの読み込み
-    ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+    ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+    
+    if (loginFlg == 1) {
+        cartData = (ArrayList<ItemData>) hs.getAttribute("userCartData");
+    } else {
+        cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+    }
     
     //カートの合計価格を計算する
     int sumPrice = 0;
@@ -55,7 +62,7 @@
         <% } else { %>
             <% for (int i=0; i < cartData.size(); i++) { %>
                 <img src="<%= cartData.get(i).getImage() %>"<br>
-                <a href=Item?cartID=<%= i %>><%= cartData.get(i).getName() %></a><br>
+                <a href=Item?id=<%= i %>&cartFlg=1><%= cartData.get(i).getName() %></a><br>
                 <p><%= cartData.get(i).getPrice() %>円(税込)</p><br>
                 <form action="Cart" method="GET">
                     <input type="submit" name="deleteBtn" value="削除">

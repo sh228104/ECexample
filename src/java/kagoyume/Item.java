@@ -31,53 +31,73 @@ public class Item extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
-            try {
-                int loginFlg = 0;
-                //セッション
-                HttpSession hs = request.getSession();
-                request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
-                //GETで取得したIDを格納する
-                int itemID = Integer.parseInt(request.getParameter("id"));
-                int cartID = Integer.parseInt(request.getParameter("cartID"));
-                
-                if (!Objects.equals(hs.getAttribute("loginUser"), null)) {
-                    loginFlg = 1;
-                }
-                //商品情報を格納するBeans
-                ItemData id = new ItemData();
-                
-                ArrayList<ItemData> cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-                //どこからアクセスしたかで処理を分ける（検索結果画面とカート画面）
-                if (!Objects.equals(cartData, null) && !Objects.equals(itemID, null)) {
-                    ArrayList<String> nameList = (ArrayList<String>) hs.getAttribute("nameList");
-                    ArrayList<String> imageList = (ArrayList<String>) hs.getAttribute("imageList");
-                    ArrayList<String> priceList = (ArrayList<String>) hs.getAttribute("priceList");
-                    ArrayList<String> descriptionList = (ArrayList<String>) hs.getAttribute("descriptionList");
-                    ArrayList<String> rateList = (ArrayList<String>) hs.getAttribute("rateList");
-                    ArrayList<String> itemCodeList = (ArrayList<String>) hs.getAttribute("itemCodeList");
-
-                    id.setName(nameList.get(itemID));
-                    id.setImage(imageList.get(itemID));
-                    id.setPrice(Integer.parseInt(priceList.get(itemID)));
-                    id.setDescription(descriptionList.get(itemID));
-                    id.setRate(Double.parseDouble(rateList.get(itemID)));
-                    id.setItemCode(itemCodeList.get(itemID));
+            //セッション
+            HttpSession hs = request.getSession();
+            
+            int itemID = Integer.parseInt(request.getParameter("id"));
+            //フラグ管理
+            int cartFlg = 0;
+            int loginFlg = 0;
+            if (!Objects.equals(request.getParameter("cartFlg"), null)) {
+                cartFlg = 1;
+            }
+            UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
+            if (!Objects.equals(loginUser, null)) {
+                loginFlg = 1;
+            }
+            
+            //商品情報を保管するためのBeans
+            ItemData id = new ItemData();
+            
+            //カート画面から遷移してきた場合の処理
+            if (cartFlg == 1) {
+                //ログインしている場合
+                if (loginFlg == 1) {
                     
-                } else if (!Objects.equals(cartData, null) && !Objects.equals(cartID, null)) {
-                    String itemCode = cartData.get(itemID).getItemCode();
-                    JsonProcessing jp = new JsonProcessing();
-                    String json = jp.getLookupJson(itemCode);
-                    id = jp.jsonLookupParser(json);
+                    try {
+                        
+                            ArrayList<ItemData> cartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                            id = cartData.get(itemID);
+                            hs.setAttribute("itemData", id);
+                        
+                        } catch (Exception e) {
+                            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定はDBエラー
+                            request.setAttribute("error", e.getMessage());
+                            request.getRequestDispatcher("/error.jsp").forward(request, response); 
+                        }
+                    
+                } else {
+                    ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+                    if (!Objects.equals(hs.getAttribute("cartData"), null)) {
+                        cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+                    }
+                    
+                    id = cartData.get(itemID);
+                    hs.setAttribute("itemData", id);
                 }
-               
-                hs.setAttribute("itemData", id);
                 
-                request.getRequestDispatcher("/item.jsp").forward(request, response);  
-            } catch (Exception e) {
-                //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定はDBエラー
-                request.setAttribute("error", e.getMessage());
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
-            }    
+            }
+            //検索結果画面から遷移してきた場合の処理
+            if (cartFlg == 0) {
+                
+                ArrayList<String> nameList = (ArrayList<String>) hs.getAttribute("nameList");
+                ArrayList<String> imageList = (ArrayList<String>) hs.getAttribute("imageList");
+                ArrayList<String> priceList = (ArrayList<String>) hs.getAttribute("priceList");
+                ArrayList<String> descriptionList = (ArrayList<String>) hs.getAttribute("descriptionList");
+                ArrayList<String> rateList = (ArrayList<String>) hs.getAttribute("rateList");
+                ArrayList<String> itemCodeList = (ArrayList<String>) hs.getAttribute("itemCodeList");
+                
+                id.setName(nameList.get(itemID));
+                id.setImage(imageList.get(itemID));
+                id.setPrice(Integer.parseInt(priceList.get(itemID)));
+                id.setDescription(descriptionList.get(itemID));
+                id.setRate(Double.parseDouble(rateList.get(itemID)));
+                id.setItemCode(itemCodeList.get(itemID));
+                
+                hs.setAttribute("itemData", id);
+            }
+            //RequestDispatcher
+            request.getRequestDispatcher("/item.jsp").forward(request, response);
         }
     }
 

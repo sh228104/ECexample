@@ -30,34 +30,38 @@ public class Cart extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
+            //セッション
+            HttpSession hs = request.getSession();
             //フラグ管理
             int loginFlg = 0;
-            
-            HttpSession hs = request.getSession();
-            //カートの商品情報を格納する配列
-            ArrayList<ItemData> cartData = new ArrayList<ItemData>();
-            
-            //ログインしている場合の処理
             UserDataDTO loginUser = (UserDataDTO) hs.getAttribute("loginUser");
+            
             if (!Objects.equals(loginUser, null)) {
                 loginFlg = 1;
-                
+            }
+            
+            //カートの商品情報を格納する配列
+            ArrayList<ItemData> cartData = new ArrayList<ItemData>();
+            ArrayList<ItemData> userCartData = new ArrayList<ItemData>();
+            
+            //ログインしている場合の処理
+            if (loginFlg == 1) {
                 try {
                     
-                    cartData = UserDataDAO.getInstance().searchCartData(loginUser);
-                    
+                    userCartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                    hs.setAttribute("userCartData", userCartData);
+                
                 } catch (Exception e) {
                     //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
                     request.setAttribute("error", e.getMessage());
                     request.getRequestDispatcher("/error.jsp").forward(request, response);
                 }
-            }
             //ログインしていない場合の処理
-            //セッションにcartDataが保存されている時
-            if (loginFlg == 0 && !Objects.equals(hs.getAttribute("cartData"), null)) {
-                
-                cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
-            
+            } else {
+                if (!Objects.equals(hs.getAttribute("cartData"), null)) {
+                    cartData = (ArrayList<ItemData>) hs.getAttribute("cartData");
+                }
+                hs.setAttribute("cartData", cartData);
             }
             
             //カート画面からIDをGETで受け取り、カートから商品を削除する処理
@@ -76,7 +80,8 @@ public class Cart extends HttpServlet {
                     try {
                         
                         UserDataDAO.getInstance().deleteCartData(deleteID);
-                        cartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                        userCartData = UserDataDAO.getInstance().searchCartData(loginUser);
+                        hs.setAttribute("userCartData", userCartData);
                         
                     } catch (Exception e) {
                         //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
@@ -86,8 +91,6 @@ public class Cart extends HttpServlet {
                     
                 }
             } 
-            //cartDataのセッションを上書きする
-            hs.setAttribute("cartData", cartData);
             
             request.getRequestDispatcher("/cart.jsp").forward(request, response);
         }
