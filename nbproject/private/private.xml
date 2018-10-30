@@ -3,11 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/zv7gf/Documents/NetBeansProjects/ECexample/web/item.jsp</file>
-            <file>file:/C:/Users/zv7gf/Documents/NetBeansProjects/ECexample/src/java/kagoyume/Item.java</file>
-            <file>file:/C:/Users/zv7gf/Documents/NetBeansProjects/ECexample/web/add.jsp</file>
-            <file>file:/C:/Users/zv7gf/Documents/NetBeansProjects/ECexample/web/cart.jsp</file>
-            <file>file:/C:/Users/zv7gf/Documents/NetBeansProjects/ECexample/src/java/kagoyume/Add.java</file>
+            <file>file:/Users/shohei/NetBeansProjects/ECexample/web/item.jsp</file>
+            <file>file:/Users/shohei/NetBeansProjects/ECexample/web/cart.jsp</file>
+            <file>file:/Users/shohei/NetBeansProjects/ECexample/web/add.jsp</file>
+            <file>file:/Users/shohei/NetBeansProjects/ECexample/web/top.jsp</file>
         </group>
     </open-files>
 </project-private>
